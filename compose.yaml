@@ -1,0 +1,61 @@
+# Arquivo de Orquestração - Tech Challenge Fase 1
+services:
+
+  # --- INFRAESTRUTURA: SERVICE DISCOVERY (EUREKA) ---
+  eureka-server:
+    build:
+      # O Docker olha para esta pasta no Ubuntu para achar o Dockerfile e o JAR
+      context: ./eureka-server-app
+    container_name: eureka_service
+    ports:
+      - '8761:8761' # Porta do Painel do Eureka
+    environment:
+      # Impede que o servidor tente se registrar nele mesmo
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: 'false'
+      EUREKA_CLIENT_FETCH_REGISTRY: 'false'
+    restart: unless-stopped
+
+  # --- BANCO DE DADOS: POSTGRESQL ---
+  postgres-db:
+    image: 'postgres:15-alpine'
+    container_name: pg_auth_service
+    environment:
+      POSTGRES_DB: db_restaurant_auth
+      POSTGRES_USER: usr_auth_service
+      # Lê a senha do arquivo seguro em /run/secrets/
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data_auth:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    restart: unless-stopped
+
+  # --- MICROSERVIÇO: AUTH SERVICE (SEU PROJETO) ---
+  auth-service:
+    build:
+      # O Docker olha para esta pasta no Ubuntu para achar o seu projeto
+      context: ./auth-service-app
+    container_name: auth_service
+    ports:
+      - '8080:8080'
+    environment:
+      # Configura o Spring para achar o banco e o eureka pela REDE do Docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/db_restaurant_auth
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      - postgres-db    # Só sobe após o banco estar pronto
+      - eureka-server  # Só sobe após o eureka estar pronto
+    restart: unless-stopped
+
+# --- CONFIGURAÇÕES GLOBAIS ---
+secrets:
+  db_password:
+    # Localização do arquivo de texto com a senha no Ubuntu
+    file: ./secrets/db_password.txt
+
+volumes:
+  # Garante que os dados do banco não sumam ao desligar o container
+  pg_data_auth:
+    driver: local

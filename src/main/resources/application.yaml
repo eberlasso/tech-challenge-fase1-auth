@@ -1,0 +1,49 @@
+spring:
+  application:
+    # Nome do microserviço para identificação em logs e monitoramento
+    name: user-authentication-service
+  docker:
+    compose:
+      enabled: false
+  cloud:
+    config:
+      enabled: false
+
+  datasource:
+    # Driver JDBC para comunicação com o PostgreSQL
+    driver-class-name: org.postgresql.Driver
+    # URL de conexão: [Protocolo]://[IP_DO_UBUNTU]:[Porta]/[Nome_do_Banco]
+    url: jdbc:postgresql://192.168.137.2:5432/db_restaurant_auth
+    # Usuário que definimos no Docker Compose
+    username: usr_auth_service
+    # Senha: O Spring buscará a variável 'DB_PASSWORD' no seu Windows (IntelliJ).
+    # Se não encontrar, ele usará o valor padrão após os dois pontos.
+    password: ${DB_PASSWORD}
+
+  jpa:
+    # Dialeto que ajuda o Hibernate a gerar o SQL específico do Postgres
+    hibernate:
+      # 'validate': O Spring apenas confere se a tabela existe (seguro para produção).
+      # O Flyway é quem cuidará de criar a tabela de fato.
+      ddl-auto: validate
+    # Exibe as queries SQL no console do IntelliJ (útil para debug)
+    show-sql: true
+    properties:
+      hibernate:
+        # Formata o SQL no console para ficar legível (com quebras de linha)
+        format_sql: true
+    open-in-view: false
+
+  flyway:
+    # Ativa o controle de versão de banco de dados
+    enabled: false
+    # Permite que o Flyway comece a rodar mesmo que o banco já tenha dados
+    baseline-on-migrate: false
+    # Local onde você deve criar o arquivo .sql (V1__create_users_table.sql)
+    locations: classpath:db/migration
+
+# Configuração de Logs para ver detalhes da autenticação se necessário
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
