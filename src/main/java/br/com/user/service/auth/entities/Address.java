@@ -1,65 +1,41 @@
 package br.com.user.service.auth.entities;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.Objects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.*;
 
 /**
- * Entity representing a physical address.
- * Maps to 'tb_addresses' in the database.
+ * Embedded address entity containing location details.
  */
-@Entity
-@Table(name = "tb_addresses")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address extends AuditableEntity {
-    /** * Unique identifier for the address.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Embeddable
+public class Address {
 
-    /** * Street name or public place.
+    /**
+     * Name of the street or public way.
      */
-    @Column(nullable = false)
+    @Column(name = "address_street", nullable = false)
     private String street;
 
-    /** * Building or house number.
+    /**
+     * Building or house number.
      */
-    @Column(nullable = false)
+    @Column(name = "address_number", nullable = false)
     private String number;
 
-    /** * City name.
+    /**
+     * City name.
      */
-    @Column(nullable = false)
+    @Column(name = "address_city", nullable = false)
     private String city;
 
-    /** * Postal code (ZIP code).
-     * Mapped to 'zip_code' in PostgreSQL.
+    /**
+     * Postal or Zip code.
      */
-    @Column(name = "zip_code", nullable = false)
+    @Column(name = "address_zip_code", nullable = false)
     private String zipCode;
-
-    /** * State or province.
-     */
-    @Column(nullable = false)
-    private String state;
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Address address = (Address) o;
-        return Objects.equals(id, address.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
 }
