@@ -1,9 +1,10 @@
 package br.com.user.service.auth.entities;
 
-import br.com.user.service.auth.enums.UserType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?") // Automatiza o delete
+@SQLRestriction("deleted = false") // Filtra automaticamente nos selects
 public class User {
 
     /**
@@ -45,7 +48,7 @@ public class User {
     /**
      * Username handle for authentication purposes.
      */
-    @Column(name = "login_handle", nullable = false, unique = true)
+    @Column(name = "login_handle", nullable = false)
     private String login;
 
     /**
@@ -57,14 +60,14 @@ public class User {
     /**
      * Defines if the user is a CLIENT or a RESTAURANT_OWNER.
      */
-    @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false)
-    private UserType type;
+    private String type;
 
     /**
-     * Composition of address-related fields.
+     * One-to-one relationship with Address.
      */
-    @Embedded
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
 
     /**
@@ -73,4 +76,11 @@ public class User {
     @UpdateTimestamp
     @Column(name = "last_modification_date", nullable = false)
     private LocalDateTime lastUpdateDate;
+
+    /**
+     * Logical deletion flag (Soft Delete).
+     * If true, the record is considered inactive and ignored by standard queries.
+     */
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }

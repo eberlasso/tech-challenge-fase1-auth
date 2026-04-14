@@ -1,8 +1,12 @@
 package br.com.user.service.auth.controller.user;
 
 
-import br.com.user.service.auth.dto.UserRegistrationDTO;
+import br.com.user.service.auth.domain.GeneralResponse;
+import br.com.user.service.auth.dto.CreateUserRequestDTO;
+import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
+import br.com.user.service.auth.service.UserService;
+import br.com.user.service.auth.utils.GeneralConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,24 +27,52 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "User Management")
 public class UserController {
+    private final UserService userService;
 
     /**
      * Registers a new user.
      */
     @PostMapping
     @Operation(summary = "Register a new user")
-    public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO registrationDTO) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequestDTO registrationDTO) {
         log.info("Receiving request to register user with email: {}", registrationDTO.getEmail());
+        userService.create(registrationDTO);
 
-        try {
-            // Lógica de serviço virá aqui
-            log.info("User successfully registered: {}", registrationDTO.getLogin());
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e) {
-            log.error("Error during user registration: {}", e.getMessage());
-            throw e;
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(new GeneralResponse(1, GeneralConstants.SUCCESS_CREATE_USER, true));
     }
+
+    /**
+     * Updates an existing user's information.
+     * This follows the PUT semantic (full replacement of editable fields).
+     *
+     * @param id The unique identifier of the user.
+     * @param dto The updated user data.
+     * @return The updated user data and HTTP status 200.
+     */
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an existing user", description = "Updates fields like name and login for a specific user ID.")
+    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @Valid @RequestBody UpdateUserRequestDTO dto) {
+        userService.update(id, dto);
+        return ResponseEntity.status(HttpStatus.OK).body(new GeneralResponse(2, GeneralConstants.UPDATED_CREATE_USER, true));
+    }
+
+    /**
+     * Performs a logical deletion of a user.
+     * The record remains in the database with the 'deleted' flag set to true.
+     *
+     * @param id The unique identifier of the user to be deleted.
+     * @return HTTP status 204 (No Content) on success.
+     */
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a user (Soft Delete)", description = "Marks a user as inactive without removing the record from the database.")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
 
     /**
      * Search users by name.
@@ -51,4 +83,6 @@ public class UserController {
         log.debug("Searching for users with name containing: {}", name);
         return ResponseEntity.ok().build();
     }
+
+
 }

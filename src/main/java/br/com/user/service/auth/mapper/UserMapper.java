@@ -1,30 +1,52 @@
 package br.com.user.service.auth.mapper;
 
-import br.com.user.service.auth.dto.UserRegistrationDTO;
+import br.com.user.service.auth.dto.AddressDTO;
+import br.com.user.service.auth.dto.CreateUserRequestDTO;
+import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
+import br.com.user.service.auth.entities.Address;
 import br.com.user.service.auth.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
 /**
  * Mapper interface for converting between User entities and DTOs.
  * Uses MapStruct for high-performance compile-time code generation.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
     /**
      * Maps Registration DTO to User Entity.
-     * Password encryption is handled externally or via a decorator if needed,
-     * but here we map the basic fields.
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lastUpdateDate", ignore = true)
-    @Mapping(target = "password", ignore = true) // Handled in Service for security clarity
-    User toEntity(UserRegistrationDTO dto);
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    User toEntity(CreateUserRequestDTO dto);
 
     /**
-     * Maps User Entity to Response DTO for API output.
+     * Maps User Entity to GeneralResponse DTO for API output.
      */
     UserResponseDTO toResponseDTO(User user);
+
+    /**
+     * Updates an existing User entity with data from UpdateUserRequestDTO.
+     * The @MappingTarget annotation ensures the existing instance is modified.
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "email", ignore = true) // Protected field
+    @Mapping(target = "password", ignore = true) // Security reason
+    @Mapping(target = "lastUpdateDate", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    void updateUserFromDto(UpdateUserRequestDTO dto, @MappingTarget User user);
+
+    /**
+     * Specifically updates an existing Address entity from an AddressDTO.
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    void updateAddressFromDto(AddressDTO dto, @MappingTarget Address address);
 }

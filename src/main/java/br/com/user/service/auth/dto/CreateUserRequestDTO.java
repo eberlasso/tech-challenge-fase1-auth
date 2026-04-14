@@ -1,5 +1,6 @@
 package br.com.user.service.auth.dto;
 
+import br.com.user.service.auth.dto.validator.ValidUserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,12 +17,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "User registration payload")
-public class UserRegistrationDTO {
+public class CreateUserRequestDTO {
     /**
      * Full name property for the new user.
      */
     @NotBlank(message = "Name cannot be empty")
-    @Schema(description = "Full name", example = "Eber Silva")
+    @Schema(description = "Full name", example = "João José da Silva")
     private String name;
 
     /**
@@ -29,14 +30,14 @@ public class UserRegistrationDTO {
      */
     @NotBlank(message = "Email cannot be empty")
     @Email(message = "Invalid email format")
-    @Schema(description = "User email", example = "eber@example.com")
+    @Schema(description = "User email", example = "silva@example.com")
     private String email;
 
     /**
      * Chosen login handle.
      */
     @NotBlank(message = "Login cannot be empty")
-    @Schema(description = "Login handle", example = "ebersilva")
+    @Schema(description = "Login handle", example = "jjsilva")
     private String login;
 
     /**
@@ -49,8 +50,8 @@ public class UserRegistrationDTO {
     /**
      * Type of account (CLIENT or RESTAURANT_OWNER).
      */
-    @NotBlank(message = "User type is required")
-    @Schema(description = "Type of account", example = "CLIENT")
+    @ValidUserType
+    @Schema(description = "Type of account", example = "'CL' to CLIENT or 'RO' to RESTAURANT_OWNER")
     private String type;
 
     /**

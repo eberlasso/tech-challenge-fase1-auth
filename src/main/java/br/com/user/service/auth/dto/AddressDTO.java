@@ -21,7 +21,7 @@ public class AddressDTO {
          * The name of the street or public thoroughfare.
          */
         @NotBlank(message = "Street is required")
-        @Schema(description = "Street name", example = "Avenida Rudge Ramos")
+        @Schema(description = "Street name", example = "Avenida Sem Fim")
         private String street;
 
         /**
@@ -35,14 +35,14 @@ public class AddressDTO {
          * The city where the user is located.
          */
         @NotBlank(message = "City is required")
-        @Schema(description = "City name", example = "São Bernardo do Campo")
+        @Schema(description = "City name", example = "São Paulo")
         private String city;
 
         /**
          * The postal code or ZIP code.
          */
         @NotBlank(message = "Zip code is required")
-        @Schema(description = "Postal code", example = "09630-000")
+        @Schema(description = "Postal code", example = "02222-000")
         private String zipCode;
 
 }
