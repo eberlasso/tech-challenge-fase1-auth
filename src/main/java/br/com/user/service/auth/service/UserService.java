@@ -1,6 +1,7 @@
 package br.com.user.service.auth.service;
 
 import br.com.user.service.auth.dto.CreateUserRequestDTO;
+import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
 import br.com.user.service.auth.entities.User;
 import br.com.user.service.auth.exceptions.BusinessException;
