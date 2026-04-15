@@ -6,10 +6,10 @@ import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
 import br.com.user.service.auth.entities.Address;
 import br.com.user.service.auth.entities.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * Mapper interface for converting between User entities and DTOs.
@@ -37,7 +37,6 @@ public interface UserMapper {
      * The @MappingTarget annotation ensures the existing instance is modified.
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "email", ignore = true) // Protected field
     @Mapping(target = "password", ignore = true) // Security reason
     @Mapping(target = "lastUpdateDate", ignore = true)
     @Mapping(target = "deleted", ignore = true)
@@ -49,4 +48,13 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     void updateAddressFromDto(AddressDTO dto, @MappingTarget Address address);
+
+    /**
+     * Este método é executado automaticamente pelo MapStruct
+     * logo após o mapeamento de updateUserFromDto ser concluído.
+     */
+    @AfterMapping
+    private void updateLastUpdateDate(@MappingTarget User user) {
+        user.setLastUpdateDate(LocalDateTime.now());
+    }
 }

@@ -67,4 +67,36 @@ public class GlobalExceptionHandler {
 
         return problemDetail;
     }
+
+    /**
+     * Captura erros de credenciais inválidas para retornar 401 ou detalhes específicos.
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        log.error("Auth error: {}", ex.getMessage());
+
+        // Mudamos para UNAUTHORIZED para diferenciar do erro 400 genérico
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setTitle("Invalid Credentials");
+        problemDetail.setType(URI.create("https://api.restaurant-auth.com/errors/invalid-password"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    /**
+     * Captura erros de credenciais inválidas para retornar 401 ou detalhes específicos.
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFoundException(UserNotFoundException ex) {
+        log.error("User Not Found: {}", ex.getMessage());
+
+        // Mudamos para BAD REQUEST para diferenciar do erro 400 genérico
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("User Not Found.");
+        problemDetail.setType(URI.create("https://api.restaurant-auth.com/errors/invalid-password"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
 }

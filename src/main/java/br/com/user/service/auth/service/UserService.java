@@ -1,10 +1,13 @@
 package br.com.user.service.auth.service;
 
 import br.com.user.service.auth.dto.CreateUserRequestDTO;
+import br.com.user.service.auth.dto.UpdatePasswordRequestDTO;
 import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
 import br.com.user.service.auth.entities.User;
 import br.com.user.service.auth.exceptions.BusinessException;
+import br.com.user.service.auth.exceptions.InvalidCredentialsException;
+import br.com.user.service.auth.exceptions.UserNotFoundException;
 import br.com.user.service.auth.mapper.UserMapper;
 import br.com.user.service.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +16,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -155,5 +160,37 @@ public class UserService {
                 .stream()
                 .map(userMapper::toResponseDTO)
                 .toList();
+    }
+
+    /**
+     * Altera a senha de um usuário existente após validar a senha atual.
+     * Este método atende ao requisito de endpoint separado para segurança de credenciais.
+     * * @param id O identificador único do usuário.
+     * @param dto Objeto contendo a senha atual e a nova senha.
+     * @throws BusinessException Caso o usuário não seja encontrado ou a senha atual seja inválida.
+     */
+    @Transactional
+    public void updatePassword(Long id, UpdatePasswordRequestDTO dto) {
+        log.info("Initiating password change process for ID: {}", id);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Password change failed: User {} not found", id);
+                    return new UserNotFoundException("User not found.");
+                });
+
+        // Validação de login/senha exigida pelo projeto
+        if (!passwordEncoder.matches(dto.currentPassword(), user.getPassword())) {
+            log.warn("Attempt to change password with invalid credentials for ID: {}", id);
+            throw new InvalidCredentialsException("The current password provided is incorrect.");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.newPassword()));
+
+        // Registro da data da última alteração conforme requisito
+        user.setLastUpdateDate(LocalDateTime.now());
+
+        userRepository.save(user);
+        log.info("Password successfully updated for user ID: {}", id);
     }
 }

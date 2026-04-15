@@ -1,7 +1,9 @@
 package br.com.user.service.auth.dto;
 
+import br.com.user.service.auth.dto.validator.ValidUserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -21,9 +23,20 @@ public class UpdateUserRequestDTO {
     @Schema(description = "Updated full name of the user", example = "José Silva dos Santos")
     private String name;
 
-    @NotBlank(message = "Login handle is required for update")
-    @Schema(description = "Updated login handle", example = "j.j.v2")
-    private String login;
+    /**
+     * Valid email for registration.
+     */
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
+    @Schema(description = "User email", example = "silva@example.com")
+    private String email;
+
+    /**
+     * Type of account (CLIENT or RESTAURANT_OWNER).
+     */
+    @ValidUserType
+    @Schema(description = "Type of account", example = "'CL' to CLIENT or 'RO' to RESTAURANT_OWNER")
+    private String type;
 
     /**
      * Optional address update. If provided, the system will update the user's current address.

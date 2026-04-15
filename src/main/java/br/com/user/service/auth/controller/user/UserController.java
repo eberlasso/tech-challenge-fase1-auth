@@ -3,6 +3,7 @@ package br.com.user.service.auth.controller.user;
 
 import br.com.user.service.auth.domain.GeneralResponse;
 import br.com.user.service.auth.dto.CreateUserRequestDTO;
+import br.com.user.service.auth.dto.UpdatePasswordRequestDTO;
 import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
 import br.com.user.service.auth.service.UserService;
@@ -70,10 +71,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-
-
-
-
     /**
      * Search users by name.
      */
@@ -82,6 +79,25 @@ public class UserController {
     public ResponseEntity<List<UserResponseDTO>> searchByName(@RequestParam String name) {
         log.debug("Searching for users with name containing: {}", name);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Endpoint dedicado para operações de segurança do usuário.
+     * * @param id ID do usuário extraído da URL.
+     * @param dto Dados de validação e nova senha.
+     * @return ResponseEntity com status 204 (No Content) em caso de sucesso.
+     */
+    @PatchMapping("/{id}/password")
+    @Operation(
+            summary = "Update user password",
+            description = "Exclusive endpoint for password change, separate from profile update.."
+    )
+    public ResponseEntity<Void> updatePassword(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdatePasswordRequestDTO dto) {
+
+        userService.updatePassword(id, dto);
+        return ResponseEntity.noContent().build();
     }
 
 
