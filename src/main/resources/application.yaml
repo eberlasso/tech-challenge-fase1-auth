@@ -31,6 +31,20 @@ spring:
         format_sql: true
     open-in-view: false
 
+# Configuração do SpringDoc para usar arquivo YAML externo
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /openapi.yaml
+  override-with-generic-response: true
+
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:minha-chave-secreta-muito-segura-123456}
+
 logging:
   level:
     root: INFO

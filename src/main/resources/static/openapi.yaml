@@ -1,0 +1,241 @@
+openapi: 3.0.3
+info:
+  title: User Service API - Tech Challenge Phase 1
+  description: API for user management, authentication, and password security.
+  version: 1.0.0
+
+servers:
+  - url: /user-service
+    description: Local server with context path
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    LoginRequestDTO:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required:
+        - login
+        - password
+
+    LoginResponseDTO:
+      type: object
+      properties:
+        token:
+          type: string
+
+    GeneralResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        success:
+          type: boolean
+
+    UserResponseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+        login:
+          type: string
+        type:
+          type: string
+        address:
+          $ref: '#/components/schemas/AddressDTO'
+
+    AddressDTO:
+      type: object
+      properties:
+        street:
+          type: string
+        number:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+
+    CreateUserRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        login:
+          type: string
+        password:
+          type: string
+        type:
+          type: string
+        address:
+          $ref: '#/components/schemas/AddressDTO'
+
+    UpdateUserRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        login:
+          type: string
+        address:
+          $ref: '#/components/schemas/AddressDTO'
+
+    UpdatePasswordRequestDTO:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+
+paths:
+  /v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      description: Validates login and password and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDTO'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDTO'
+        '401':
+          description: Unauthorized
+
+  /v1/users:
+    post:
+      tags:
+        - User Management
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequestDTO'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralResponse'
+
+  /v1/users/search:
+    get:
+      tags:
+        - User Management
+      summary: Search users by name
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponseDTO'
+
+  /v1/users/{id}:
+    put:
+      tags:
+        - User Management
+      summary: Update an existing user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequestDTO'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralResponse'
+
+    delete:
+      tags:
+        - User Management
+      summary: Delete a user (Soft Delete)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No Content
+
+  /v1/users/{id}/password:
+    patch:
+      tags:
+        - User Management
+      summary: Update user password
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequestDTO'
+      responses:
+        '204':
+          description: No Content

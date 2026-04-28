@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?") // Automatiza o delete
+@SQLDelete(sql = "UPDATE addresses SET deleted = true WHERE id = ?") // Corrigido para a tabela correta
 @SQLRestriction("deleted = false") // Filtra automaticamente nos selects
 public class Address {
 

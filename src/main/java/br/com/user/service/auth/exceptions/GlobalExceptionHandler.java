@@ -3,6 +3,8 @@ package br.com.user.service.auth.exceptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,6 +20,21 @@ import java.time.Instant;
 public class GlobalExceptionHandler {
 
     /**
+     * Handles authentication failures (User not found or wrong password).
+     */
+    @ExceptionHandler({BadCredentialsException.class, InternalAuthenticationServiceException.class})
+    public ProblemDetail handleBadCredentialsException(Exception ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid login handle or password.");
+        problemDetail.setTitle("Authentication Failed");
+        problemDetail.setType(URI.create("https://api.user-service.com/errors/invalid-credentials"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    /**
      * Handles business logic errors.
      */
     @ExceptionHandler(BusinessException.class)
@@ -26,7 +43,7 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problemDetail.setTitle("Business Rule Violation");
-        problemDetail.setType(URI.create("https://api.restaurant-auth.com/errors/business-rule"));
+        problemDetail.setType(URI.create("https://api.user-service.com/errors/business-rule"));
         problemDetail.setProperty("timestamp", Instant.now());
 
         return problemDetail;
@@ -42,13 +59,41 @@ public class GlobalExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request content.");
         problemDetail.setTitle("Validation Failed");
 
-        // Extracting specific field errors
         var errors = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
 
         problemDetail.setProperty("invalid_params", errors);
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    /**
+     * Captura erros de credenciais inválidas (uso manual).
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        log.error("Auth error: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setTitle("Invalid Credentials");
+        problemDetail.setType(URI.create("https://api.user-service.com/errors/invalid-password"));
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    /**
+     * Captura erros de usuário não encontrado.
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFoundException(UserNotFoundException ex) {
+        log.error("User Not Found: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("User Not Found");
         problemDetail.setProperty("timestamp", Instant.now());
 
         return problemDetail;
@@ -63,38 +108,6 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
         problemDetail.setTitle("Internal Server Error");
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return problemDetail;
-    }
-
-    /**
-     * Captura erros de credenciais inválidas para retornar 401 ou detalhes específicos.
-     */
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ProblemDetail handleInvalidCredentialsException(InvalidCredentialsException ex) {
-        log.error("Auth error: {}", ex.getMessage());
-
-        // Mudamos para UNAUTHORIZED para diferenciar do erro 400 genérico
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
-        problemDetail.setTitle("Invalid Credentials");
-        problemDetail.setType(URI.create("https://api.restaurant-auth.com/errors/invalid-password"));
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return problemDetail;
-    }
-
-    /**
-     * Captura erros de credenciais inválidas para retornar 401 ou detalhes específicos.
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ProblemDetail handleUserNotFoundException(UserNotFoundException ex) {
-        log.error("User Not Found: {}", ex.getMessage());
-
-        // Mudamos para BAD REQUEST para diferenciar do erro 400 genérico
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-        problemDetail.setTitle("User Not Found.");
-        problemDetail.setType(URI.create("https://api.restaurant-auth.com/errors/invalid-password"));
         problemDetail.setProperty("timestamp", Instant.now());
 
         return problemDetail;
