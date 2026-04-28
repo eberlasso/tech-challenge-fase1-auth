@@ -4,8 +4,6 @@ import br.com.user.service.auth.dto.CreateUserRequestDTO;
 import br.com.user.service.auth.dto.UpdatePasswordRequestDTO;
 import br.com.user.service.auth.dto.UpdateUserRequestDTO;
 import br.com.user.service.auth.dto.UserResponseDTO;
-import br.com.user.service.auth.entities.Address;
-import br.com.user.service.auth.entities.User;
 import br.com.user.service.auth.exceptions.GlobalExceptionHandler;
 import br.com.user.service.auth.mapper.UserMapper;
 import br.com.user.service.auth.service.UserService;
@@ -17,13 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;

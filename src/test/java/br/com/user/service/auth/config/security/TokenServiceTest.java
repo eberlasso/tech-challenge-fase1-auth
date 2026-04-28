@@ -1,5 +1,6 @@
 package br.com.user.service.auth.config.security;
 
+import br.com.user.service.auth.entities.Address;
 import br.com.user.service.auth.entities.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,10 +18,25 @@ class TokenServiceTest {
     void setUp() {
         tokenService = new TokenService();
         ReflectionTestUtils.setField(tokenService, "secret", "test-secret");
-        
+
+        Address address = Address.builder()
+                .id(1L)
+                .street("Rua Teste")
+                .number("12345")
+                .city("Cidade Teste")
+                .zipCode("12345000")
+                .deleted(false)
+                .build();
         user = User.builder()
+                .id(1L)
+                .name("Teste")
+                .email("teste@teste.com")
                 .login("testuser")
+                .password("123")
                 .type("CLIENT")
+                .address(address)
+                .lastUpdateDate(null)
+                .deleted(false)
                 .build();
     }
 
