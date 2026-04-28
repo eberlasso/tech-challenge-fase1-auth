@@ -50,6 +50,7 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getStatus());
         assertEquals("Validation Failed", result.getTitle());
+        assert result.getProperties() != null;
         assertNotNull(result.getProperties().get("invalid_params"));
     }
 

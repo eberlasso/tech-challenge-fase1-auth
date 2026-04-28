@@ -1,5 +1,6 @@
 package br.com.user.service.auth.service;
 
+import br.com.user.service.auth.entities.Address;
 import br.com.user.service.auth.entities.User;
 import br.com.user.service.auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,10 +32,24 @@ class AuthorizationServiceTest {
 
     @BeforeEach
     void setUp() {
+        Address address = Address.builder()
+                .id(1L)
+                .street("Rua Teste")
+                .number("12345")
+                .city("Cidade Teste")
+                .zipCode("12345000")
+                .deleted(false)
+                .build();
         user = User.builder()
+                .id(1L)
+                .name("Teste")
+                .email("teste@teste.com")
                 .login("testuser")
-                .password("encodedPassword")
+                .password("123")
                 .type("CLIENT")
+                .address(address)
+                .lastUpdateDate(null)
+                .deleted(false)
                 .build();
     }
 
