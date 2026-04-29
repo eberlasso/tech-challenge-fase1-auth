@@ -1,49 +1,62 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /user-service
+
 spring:
   application:
-    # Nome do microserviço para identificação em logs e monitoramento
-    name: user-authentication-service
-  docker:
-    compose:
-      enabled: false
+    name: user-service
   cloud:
     config:
       enabled: false
-
   datasource:
-    # Driver JDBC para comunicação com o PostgreSQL
     driver-class-name: org.postgresql.Driver
-    # URL de conexão: [Protocolo]://[IP_DO_UBUNTU]:[Porta]/[Nome_do_Banco]
-    url: jdbc:postgresql://192.168.137.2:5432/db_restaurant_auth
-    # Usuário que definimos no Docker Compose
+    # Conecta ao PostgreSQL no seu Ubuntu
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.137.2:5432/db_restaurant_auth}
     username: usr_auth_service
-    # Senha: O Spring buscará a variável 'DB_PASSWORD' no seu Windows (IntelliJ).
-    # Se não encontrar, ele usará o valor padrão após os dois pontos.
     password: ${DB_PASSWORD}
+  flyway:
+    enabled: true
+    schemas: public  # Force o Flyway a usar o schema public
+    default-schema: public
+    locations: classpath:db/migration
 
   jpa:
-    # Dialeto que ajuda o Hibernate a gerar o SQL específico do Postgres
     hibernate:
-      # 'validate': O Spring apenas confere se a tabela existe (seguro para produção).
-      # O Flyway é quem cuidará de criar a tabela de fato.
-      ddl-auto: validate
-    # Exibe as queries SQL no console do IntelliJ (útil para debug)
+      # 'validate' para que o Flyway controle o esquema
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
-        # Formata o SQL no console para ficar legível (com quebras de linha)
         format_sql: true
     open-in-view: false
 
-  flyway:
-    # Ativa o controle de versão de banco de dados
-    enabled: false
-    # Permite que o Flyway comece a rodar mesmo que o banco já tenha dados
-    baseline-on-migrate: false
-    # Local onde você deve criar o arquivo .sql (V1__create_users_table.sql)
-    locations: classpath:db/migration
+# Configuração do SpringDoc para usar arquivo YAML externo
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /openapi.yaml
+  override-with-generic-response: true
 
-# Configuração de Logs para ver detalhes da autenticação se necessário
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:minha-chave-secreta-muito-segura-123456}
+
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: INFO
+    br.com.user.service.auth: DEBUG # Mostra detalhes apenas do seu projeto
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always

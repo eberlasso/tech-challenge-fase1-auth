@@ -1,0 +1,44 @@
+services:
+  # --- DATABASE: POSTGRESQL (OBRIGATÓRIO) ---
+  postgres-db:
+    image: 'postgres:15-alpine'
+    container_name: pg_auth_service
+    environment:
+      POSTGRES_DB: db_restaurant_auth
+      POSTGRES_USER: usr_auth_service
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data_auth:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usr_auth_service -d db_restaurant_auth"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  auth-service:
+    build: .
+    container_name: auth_service
+    ports:
+      - '8080:8080'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/db_restaurant_auth
+      SPRING_DATASOURCE_USERNAME: usr_auth_service
+      SPRING_DATASOURCE_PASSWORD_FILE: /run/secrets/db_password
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    secrets:
+      - db_password
+    restart: unless-stopped
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+
+volumes:
+  pg_data_auth:
