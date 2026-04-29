@@ -1,5 +1,15 @@
 services:
-  # --- DATABASE: POSTGRESQL (OBRIGATÓRIO) ---
+  eureka-server:
+    build:
+      context: ./eureka-server-app
+    container_name: eureka_service
+    ports:
+      - '8761:8761'
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: 'false'
+      EUREKA_CLIENT_FETCH_REGISTRY: 'false'
+    restart: unless-stopped
+
   postgres-db:
     image: 'postgres:15-alpine'
     container_name: pg_auth_service
@@ -13,25 +23,22 @@ services:
       - pg_data_auth:/var/lib/postgresql/data
     secrets:
       - db_password
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U usr_auth_service -d db_restaurant_auth"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   auth-service:
-    build: .
+    build:
+      context: ./auth-service-app
     container_name: auth_service
     ports:
       - '8080:8080'
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/db_restaurant_auth
-      SPRING_DATASOURCE_USERNAME: usr_auth_service
-      SPRING_DATASOURCE_PASSWORD_FILE: /run/secrets/db_password
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      # O segredo é mapeado para a variável que o YAML espera
+      DB_PASSWORD: /run/secrets/db_password
     depends_on:
-      postgres-db:
-        condition: service_healthy
+      - postgres-db
+      - eureka-server
     secrets:
       - db_password
     restart: unless-stopped
@@ -42,3 +49,4 @@ secrets:
 
 volumes:
   pg_data_auth:
+    driver: local
