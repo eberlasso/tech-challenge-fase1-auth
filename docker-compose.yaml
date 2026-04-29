@@ -1,15 +1,4 @@
 services:
-  eureka-server:
-    build:
-      context: ./eureka-server-app
-    container_name: eureka_service
-    ports:
-      - '8761:8761'
-    environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: 'false'
-      EUREKA_CLIENT_FETCH_REGISTRY: 'false'
-    restart: unless-stopped
-
   postgres-db:
     image: 'postgres:15-alpine'
     container_name: pg_auth_service
@@ -27,18 +16,15 @@ services:
 
   auth-service:
     build:
-      context: ./auth-service-app
+      context: . # Usa a pasta atual onde está o seu src/ e pom.xml
     container_name: auth_service
     ports:
       - '8080:8080'
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/db_restaurant_auth
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      # O segredo é mapeado para a variável que o YAML espera
       DB_PASSWORD: /run/secrets/db_password
     depends_on:
-      - postgres-db
-      - eureka-server
+      - postgres-db # Removido o eureka-server daqui
     secrets:
       - db_password
     restart: unless-stopped
