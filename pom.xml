@@ -9,7 +9,7 @@
         <relativePath/> </parent>
     <groupId>br.com.user.service.auth</groupId>
     <artifactId>user-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>User Service</name>
     <description>User Service</description>
 
