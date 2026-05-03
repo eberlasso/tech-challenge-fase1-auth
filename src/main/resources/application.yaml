@@ -1,3 +1,7 @@
+server:
+  servlet:
+    context-path: /user-authentication-service
+
 spring:
   application:
     name: user-authentication-service

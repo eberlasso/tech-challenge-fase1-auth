@@ -28,4 +28,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * Finds a user by their unique login handle.
      */
     Optional<User> findByLogin(String login);
+
+    /**
+     * Finds a user by their login handle and email.
+     */
+    Optional<User> findByLoginAndEmail(String login, String email);
 }

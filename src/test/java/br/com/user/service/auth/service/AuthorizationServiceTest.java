@@ -45,7 +45,7 @@ class AuthorizationServiceTest {
                 .name("Teste")
                 .email("teste@teste.com")
                 .login("testuser")
-                .password("123")
+                .password("encodedPassword") // Usar uma senha codificada para simular o comportamento real
                 .type("CLIENT")
                 .address(address)
                 .lastUpdateDate(null)
@@ -54,29 +54,44 @@ class AuthorizationServiceTest {
     }
 
     @Test
-    @DisplayName("Should load user by username successfully")
-    void shouldLoadUserByUsernameSuccessfully() {
-        when(userRepository.findByLogin(anyString())).thenReturn(Optional.of(user));
+    @DisplayName("Should load user by combined username (login::email) successfully")
+    void shouldLoadUserByCombinedUsernameSuccessfully() {
+        String combinedUsername = "testuser::teste@teste.com";
+        when(userRepository.findByLoginAndEmail("testuser", "teste@teste.com")).thenReturn(Optional.of(user));
 
-        UserDetails userDetails = authorizationService.loadUserByUsername("testuser");
+        UserDetails userDetails = authorizationService.loadUserByUsername(combinedUsername);
 
         assertNotNull(userDetails);
-        assertEquals("testuser", userDetails.getUsername());
-        assertEquals("encodedPassword", userDetails.getPassword());
+        assertEquals(user.getEmail(), userDetails.getUsername()); // O username do UserDetails agora é o email
+        assertEquals(user.getPassword(), userDetails.getPassword());
         assertTrue(userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT")));
         
-        verify(userRepository, times(1)).findByLogin("testuser");
+        verify(userRepository, times(1)).findByLoginAndEmail("testuser", "teste@teste.com");
     }
 
     @Test
-    @DisplayName("Should throw UsernameNotFoundException when user not found")
-    void shouldThrowExceptionWhenUserNotFound() {
-        when(userRepository.findByLogin(anyString())).thenReturn(Optional.empty());
+    @DisplayName("Should throw UsernameNotFoundException when user not found by combined username")
+    void shouldThrowExceptionWhenUserNotFoundByCombinedUsername() {
+        String combinedUsername = "nonexistent::nonexistent@example.com";
+        when(userRepository.findByLoginAndEmail(anyString(), anyString())).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> 
-                authorizationService.loadUserByUsername("nonexistent"));
+        UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> 
+                authorizationService.loadUserByUsername(combinedUsername));
         
-        verify(userRepository, times(1)).findByLogin("nonexistent");
+        assertEquals("User not found with login: nonexistent and email: nonexistent@example.com", exception.getMessage());
+        verify(userRepository, times(1)).findByLoginAndEmail("nonexistent", "nonexistent@example.com");
+    }
+
+    @Test
+    @DisplayName("Should throw UsernameNotFoundException when combined username format is invalid")
+    void shouldThrowExceptionWhenCombinedUsernameFormatIsInvalid() {
+        String invalidUsername = "testuser_only"; // Falta o "::email"
+
+        UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> 
+                authorizationService.loadUserByUsername(invalidUsername));
+        
+        assertEquals("Invalid username format. Expected 'login::email'.", exception.getMessage());
+        verify(userRepository, never()).findByLoginAndEmail(anyString(), anyString());
     }
 }

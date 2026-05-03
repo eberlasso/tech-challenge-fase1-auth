@@ -30,14 +30,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
-        log.info("Attempting login for user: {}", loginRequest.login());
+        log.info("Attempting login for user: {} with email: {}", loginRequest.login(), loginRequest.email());
         
-        var usernamePassword = new UsernamePasswordAuthenticationToken(loginRequest.login(), loginRequest.password());
+        // Concatena login e email para passar como "username" para o Spring Security
+        String combinedUsername = loginRequest.login() + "::" + loginRequest.email();
+        
+        var usernamePassword = new UsernamePasswordAuthenticationToken(combinedUsername, loginRequest.password());
         
         this.authenticationManager.authenticate(usernamePassword);
 
-        var user = userRepository.findByLogin(loginRequest.login())
-                .orElseThrow(() -> new RuntimeException("User not found after authentication"));
+        // Após autenticação bem-sucedida, busca o usuário completo usando login e email
+        var user = userRepository.findByLoginAndEmail(loginRequest.login(), loginRequest.email())
+                .orElseThrow(() -> new RuntimeException("User not found after authentication with login and email"));
 
         var token = tokenService.generateToken(user);
 

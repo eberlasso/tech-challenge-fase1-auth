@@ -104,7 +104,7 @@ class DtoAndDomainTest {
     @Test
     @DisplayName("Test LoginRequestDTO (Record)")
     void testLoginRequestDTO() {
-        LoginRequestDTO dto = new LoginRequestDTO("user", "pass");
+        LoginRequestDTO dto = new LoginRequestDTO("user", "pass", "email@email.com.br");
         assertEquals("user", dto.login());
         assertEquals("pass", dto.password());
     }

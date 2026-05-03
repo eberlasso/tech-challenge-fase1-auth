@@ -31,7 +31,7 @@ class GlobalExceptionHandlerTest {
         BusinessException ex = new BusinessException("Business error message");
         ProblemDetail result = exceptionHandler.handleBusinessException(ex);
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getStatus());
+        assertEquals(HttpStatus.CONFLICT.value(), result.getStatus());
         assertEquals("Business error message", result.getDetail());
         assertEquals("Business Rule Violation", result.getTitle());
     }

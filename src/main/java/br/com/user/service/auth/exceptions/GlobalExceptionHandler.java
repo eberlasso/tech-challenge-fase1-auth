@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBusinessException(BusinessException ex) {
         log.error("Business error: {}", ex.getMessage());
 
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage()); // Alterado para HttpStatus.CONFLICT
         problemDetail.setTitle("Business Rule Violation");
         problemDetail.setType(URI.create("https://api.user-service.com/errors/business-rule"));
         problemDetail.setProperty("timestamp", Instant.now());
