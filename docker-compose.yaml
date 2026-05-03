@@ -3,35 +3,35 @@ services:
     image: 'postgres:15-alpine'
     container_name: pg_auth_service
     environment:
-      POSTGRES_DB: db_restaurant_auth
-      POSTGRES_USER: usr_auth_service
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - '5432:5432'
+      - "${DB_PORT}:5432"
     volumes:
       - pg_data_auth:/var/lib/postgresql/data
-    secrets:
-      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   auth-service:
     build:
-      context: . # Usa a pasta atual onde está o seu src/ e pom.xml
+      context: .
     container_name: auth_service
     ports:
-      - '8080:8080'
+      - "${APP_PORT}:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/db_restaurant_auth
-      DB_PASSWORD: /run/secrets/db_password
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     depends_on:
-      - postgres-db # Removido o eureka-server daqui
-    secrets:
-      - db_password
+      postgres-db:
+        condition: service_healthy
     restart: unless-stopped
-
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
 
 volumes:
   pg_data_auth:
