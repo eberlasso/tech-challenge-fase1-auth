@@ -1,6 +1,6 @@
 server:
   servlet:
-    context-path: /user-authentication-service
+    context-path: /user
 
 spring:
   application:
