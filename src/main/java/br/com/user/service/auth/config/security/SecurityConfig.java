@@ -38,16 +38,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { // Adicione o throws Exception
+    public SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Use ** para aceitar o prefixo /user-service se ele vier na URL
-                        .requestMatchers("**/v1/auth/login").permitAll()
-                        .requestMatchers("**/v1/users").permitAll()
-                        // Recomendo mover o que estava no WebSecurityCustomizer para cá
-                        .requestMatchers("**/swagger-ui/**", "**/v3/api-docs/**", "**/actuator/**", "**/openapi.yaml").permitAll()
+                        // Adicionada a / antes dos asteriscos
+                        .requestMatchers("/**/v1/auth/login").permitAll()
+                        .requestMatchers("/**/v1/users").permitAll()
+                        .requestMatchers("/**/swagger-ui/**", "/**/v3/api-docs/**", "/**/actuator/**", "/**/openapi.yaml").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
