@@ -1,6 +1,8 @@
 package br.com.user.service.auth.repository;
 
 import br.com.user.service.auth.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,10 +16,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * Finds users by name containing a specific string (Case Insensitive).
+     * Finds users by name containing a specific string (Case Insensitive) with pagination.
      * Requirement: "Busca de usuários pelo nome".
      */
-    List<User> findByNameContainingIgnoreCase(String name);
+    Page<User> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     /**
      * Finds a user by their unique email.

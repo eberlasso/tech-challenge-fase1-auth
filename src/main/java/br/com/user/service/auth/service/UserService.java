@@ -12,14 +12,15 @@ import br.com.user.service.auth.mapper.UserMapper;
 import br.com.user.service.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Service class responsible for handling user-related business logic.
@@ -40,7 +41,7 @@ public class UserService {
      *
      * @param dto Data Transfer Object containing registration details.
      * @return UserResponseDTO containing the persisted user information.
-     * @throws BusinessException if the email is already registered in the database.
+     * @throws BusinessException if the email is already registered in our system.
      */
     @Transactional
     public UserResponseDTO create(CreateUserRequestDTO dto) {
@@ -66,18 +67,23 @@ public class UserService {
     }
 
     /**
-     * Retrieves a list of users whose full names contain the specified string.
+     * Retrieves a page of users whose full names contain the specified string.
+     * If the name is null or empty, all users are returned with pagination.
      * This operation is optimized for read-only access.
      *
      * @param name The string to search for within user names.
-     * @return A list of UserResponseDTO matching the criteria.
+     * @param pageable Pagination information.
+     * @return A page of UserResponseDTO matching the criteria.
      */
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> findByName(String name) {
-        log.debug("Searching for users with name containing: {}", name);
-        return userRepository.findByNameContainingIgnoreCase(name)
-                .stream()
-                .map(userMapper::toResponseDTO).toList();
+    public Page<UserResponseDTO> findByName(String name, Pageable pageable) {
+        if (!StringUtils.hasText(name)) {
+            log.debug("Name parameter is null or empty, returning all users with pagination.");
+            return findAll(pageable);
+        }
+        log.debug("Searching for users with name containing: {} with pagination: {}", name, pageable);
+        return userRepository.findByNameContainingIgnoreCase(name, pageable)
+                .map(userMapper::toResponseDTO);
     }
     /**
      * Updates an existing user's profile and address information.
@@ -148,18 +154,17 @@ public class UserService {
     }
 
     /**
-     * Retrieves all active users in the system.
+     * Retrieves all active users in the system with pagination.
      * Note: Deleted users are automatically filtered if @SQLRestriction is active on the entity.
      *
-     * @return List of all active UserResponseDTOs.
+     * @param pageable Pagination information.
+     * @return A page of all active UserResponseDTOs.
      */
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> findAll() {
-        log.debug("Listing all active users");
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toResponseDTO)
-                .toList();
+    public Page<UserResponseDTO> findAll(Pageable pageable) {
+        log.debug("Listing all active users with pagination: {}", pageable);
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponseDTO);
     }
 
     /**

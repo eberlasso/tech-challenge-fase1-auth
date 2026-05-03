@@ -10,12 +10,13 @@ import br.com.user.service.auth.utils.GeneralConstants;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * REST Controller for User Management.
@@ -51,9 +52,11 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserResponseDTO>> searchByName(@RequestParam(required = false) String name) {
-        log.debug("Searching for users with name containing: {}", name);
-        return ResponseEntity.ok(userService.findByName(name));
+    public ResponseEntity<Page<UserResponseDTO>> searchByName(
+            @RequestParam(required = false) String name,
+            @PageableDefault(size = 10) Pageable pageable) {
+        log.debug("Searching for users with name containing: {} and pagination: {}", name, pageable);
+        return ResponseEntity.ok(userService.findByName(name, pageable));
     }
 
     @PatchMapping("/{id}/password")
