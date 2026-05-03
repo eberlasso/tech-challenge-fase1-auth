@@ -43,10 +43,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Adicionada a / antes dos asteriscos
-                        .requestMatchers("/**/v1/auth/login").permitAll()
-                        .requestMatchers("/**/v1/users").permitAll()
-                        .requestMatchers("/**/swagger-ui/**", "/**/v3/api-docs/**", "/**/actuator/**", "/**/openapi.yaml").permitAll()
+                        // Padrões simplificados que o novo parser aceita
+                        .requestMatchers("/v1/auth/login", "**/v1/auth/login").permitAll()
+                        .requestMatchers("/v1/users", "**/v1/users").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**", "/openapi.yaml").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
