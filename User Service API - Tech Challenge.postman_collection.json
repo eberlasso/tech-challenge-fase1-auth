@@ -1,0 +1,249 @@
+{
+  "info": {
+    "_postman_id": "cd38b101-a9bc-45e3-bd7a-8238d18df7b8",
+    "name": "User Service API - Tech Challenge",
+    "description": "Cenários de teste baseados na documentação Swagger do User Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1598189"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"eber.new@example.com\",\n    \"login\": \"123\",\n    \"password\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/v1/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Teste Teste\",\n    \"email\": \"test1@example.com\",\n    \"login\": \"123\",\n    \"password\": \"123\",\n    \"type\": \"CL\",\n    \"address\": {\n        \"street\": \"Rua Exemplo\",\n        \"number\": \"123\",\n        \"city\": \"São Bernardo do Campo\",\n        \"zipCode\": \"09700-000\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{server_ubuntu}}/user/v1/users",
+              "host": [
+                "{{server_ubuntu}}"
+              ],
+              "path": [
+                "user",
+                "v1",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VyLXNlcnZpY2UiLCJzdWIiOiIxMjMiLCJyb2xlIjoiUk8iLCJleHAiOjE3Nzc4NTY5ODB9.8xpx4EgZl0dcmEwpRmMoAeX5Terge1S2MQz2iSMqgGzXa6g",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/v1/users/search?name",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "v1",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VyLXNlcnZpY2UiLCJzdWIiOiIxMjMiLCJyb2xlIjoiQ0wiLCJleHAiOjE3Nzc4NTY1ODB9.3TCzxV5yYNqHdv3cKLtk0Bjkfkrg94OtZhrUGXQvM-A",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Eber Atualizado\",\n    \"email\": \"eber.new@example.com\",\n    \"type\": \"RO\",\n    \"address\": {\n        \"street\": \"Nova Rua\",\n        \"number\": \"456\",\n        \"city\": \"São Bernardo do Campo\",\n        \"zipCode\": \"09700-111\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/v1/users/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "v1",
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (Soft Delete)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VyLXNlcnZpY2UiLCJzdWIiOiIxMjMiLCJyb2xlIjoiUk8iLCJleHAiOjE3Nzc4NTY5ODB9.8xpx4EgZl0dcmEwpRmMoAX5Te1S2MQz2iSMqgGzXa6g",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/v1/users/3",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "v1",
+                "users",
+                "3"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VyLXNlcnZpY2UiLCJzdWIiOiIxMjMiLCJyb2xlIjoiUk8iLCJleHAiOjE3Nzc4NTY5ODB9.8xpx4EgZl0dcmEwpRmMoAX5Te1S2MQz2iSMqgGzXa6g",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"currentPassword\": \"123\",\n    \"newPassword\": \"124\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/v1/users/1/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "v1",
+                "users",
+                "1",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
