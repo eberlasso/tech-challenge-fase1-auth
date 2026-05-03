@@ -15,16 +15,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,6 +48,7 @@ class UserServiceTest {
     private UserResponseDTO userResponseDTO;
     private UpdateUserRequestDTO updateUserRequestDTO;
     private UpdatePasswordRequestDTO updatePasswordRequestDTO;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
@@ -94,6 +98,8 @@ class UserServiceTest {
         updatePasswordRequestDTO = new UpdatePasswordRequestDTO(
                 "rawPassword", "newRawPassword"
         );
+
+        pageable = PageRequest.of(0, 10);
     }
 
     @Test
@@ -129,17 +135,42 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should find users by name successfully")
-    void shouldFindUsersByNameSuccessfully() {
-        when(userRepository.findByNameContainingIgnoreCase(anyString())).thenReturn(List.of(user));
+    @DisplayName("Should find users by name successfully with pagination")
+    void shouldFindUsersByNameSuccessfullyWithPagination() {
+        Page<User> userPage = new PageImpl<>(List.of(user), pageable, 1);
+        when(userRepository.findByNameContainingIgnoreCase(anyString(), any(Pageable.class))).thenReturn(userPage);
         when(userMapper.toResponseDTO(any(User.class))).thenReturn(userResponseDTO);
 
-        List<UserResponseDTO> result = userService.findByName("Test");
+        Page<UserResponseDTO> result = userService.findByName("Test", pageable);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        assertEquals(userResponseDTO.getName(), result.getFirst().getName());
-        verify(userRepository, times(1)).findByNameContainingIgnoreCase("Test");
+        assertEquals(userResponseDTO.getName(), result.getContent().getFirst().getName());
+        verify(userRepository, times(1)).findByNameContainingIgnoreCase(eq("Test"), eq(pageable));
+    }
+
+    @Test
+    @DisplayName("Should find all users when name is null or empty with pagination")
+    void shouldFindAllUsersWhenNameIsNullOrEmptyWithPagination() {
+        Page<User> userPage = new PageImpl<>(List.of(user), pageable, 1);
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(userPage);
+        when(userMapper.toResponseDTO(any(User.class))).thenReturn(userResponseDTO);
+
+        Page<UserResponseDTO> result = userService.findByName(null, pageable);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(userResponseDTO.getName(), result.getContent().getFirst().getName());
+        verify(userRepository, times(1)).findAll(eq(pageable));
+        verify(userRepository, never()).findByNameContainingIgnoreCase(anyString(), any(Pageable.class));
+
+        result = userService.findByName("", pageable);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(userResponseDTO.getName(), result.getContent().getFirst().getName());
+        verify(userRepository, times(2)).findAll(eq(pageable)); // Called twice
+        verify(userRepository, never()).findByNameContainingIgnoreCase(anyString(), any(Pageable.class));
     }
 
     @Test
@@ -189,15 +220,18 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should find all users successfully")
-    void shouldFindAllUsersSuccessfully() {
-        when(userRepository.findAll()).thenReturn(List.of(user));
+    @DisplayName("Should find all users successfully with pagination")
+    void shouldFindAllUsersSuccessfullyWithPagination() {
+        Page<User> userPage = new PageImpl<>(List.of(user), pageable, 1);
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(userPage);
         when(userMapper.toResponseDTO(any(User.class))).thenReturn(userResponseDTO);
 
-        List<UserResponseDTO> result = userService.findAll();
+        Page<UserResponseDTO> result = userService.findAll(pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(userResponseDTO.getName(), result.getContent().getFirst().getName());
+        verify(userRepository, times(1)).findAll(eq(pageable));
     }
 
     @Test

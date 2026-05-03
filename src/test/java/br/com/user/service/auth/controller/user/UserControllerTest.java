@@ -15,10 +15,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -139,16 +144,37 @@ class UserControllerTest {
         String name = "Test";
         UserResponseDTO user1 = UserResponseDTO.builder().id(1L).name("Test User 1").email("test1@example.com").build();
         List<UserResponseDTO> userList = List.of(user1);
+        Page<UserResponseDTO> userPage = new PageImpl<>(userList, PageRequest.of(0, 10), userList.size());
 
-        when(userService.findByName(name)).thenReturn(userList);
+        when(userService.findByName(eq(name), any(Pageable.class))).thenReturn(userPage);
 
         mockMvc.perform(get("/v1/users/search")
                         .param("name", name))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(user1.getId()))
-                .andExpect(jsonPath("$[0].name").value(user1.getName()));
+                .andExpect(jsonPath("$.content[0].id").value(user1.getId()))
+                .andExpect(jsonPath("$.content[0].name").value(user1.getName()))
+                .andExpect(jsonPath("$.totalElements").value(userList.size()));
 
-        verify(userService, times(1)).findByName(eq(name));
+        verify(userService, times(1)).findByName(eq(name), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Should search all users when name is not provided")
+    void searchByName_NoNameProvided_Success() throws Exception {
+        UserResponseDTO user1 = UserResponseDTO.builder().id(1L).name("Test User 1").email("test1@example.com").build();
+        UserResponseDTO user2 = UserResponseDTO.builder().id(2L).name("Test User 2").email("test2@example.com").build();
+        List<UserResponseDTO> userList = List.of(user1, user2);
+        Page<UserResponseDTO> userPage = new PageImpl<>(userList, PageRequest.of(0, 10), userList.size());
+
+        when(userService.findByName(eq(null), any(Pageable.class))).thenReturn(userPage);
+
+        mockMvc.perform(get("/v1/users/search"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(user1.getId()))
+                .andExpect(jsonPath("$.content[1].id").value(user2.getId()))
+                .andExpect(jsonPath("$.totalElements").value(userList.size()));
+
+        verify(userService, times(1)).findByName(eq(null), any(Pageable.class));
     }
 
     @Test

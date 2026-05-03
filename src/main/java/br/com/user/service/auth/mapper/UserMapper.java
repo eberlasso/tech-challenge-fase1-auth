@@ -9,7 +9,6 @@ import br.com.user.service.auth.entities.User;
 import org.mapstruct.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * Mapper interface for converting between User entities and DTOs.
