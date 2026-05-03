@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserResponseDTO>> searchByName(@RequestParam String name) {
+    public ResponseEntity<List<UserResponseDTO>> searchByName(@RequestParam(required = false) String name) {
         log.debug("Searching for users with name containing: {}", name);
         return ResponseEntity.ok(userService.findByName(name));
     }
