@@ -38,14 +38,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { // Adicione o throws Exception aqui
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Padrões simplificados que o novo parser aceita
-                        .requestMatchers("/v1/auth/login", "**/v1/auth/login").permitAll()
-                        .requestMatchers("/v1/users", "**/v1/users").permitAll()
+                        // O segredo está na barra ANTES do asterisco: /**/
+                        .requestMatchers("/v1/auth/login", "/**/v1/auth/login").permitAll()
+                        .requestMatchers("/v1/users", "/**/v1/users").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**", "/openapi.yaml").permitAll()
                         .anyRequest().authenticated()
                 )
