@@ -1,6 +1,11 @@
 spring:
   application:
     name: user-authentication-service
+
+  # Define qual profile usar (lido do .env através do Compose)
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
   docker:
     compose:
       enabled: false
@@ -10,27 +15,29 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    # Conecta no serviço do banco pelo nome definido no compose
-    url: jdbc:postgresql://postgres-db:5432/db_restaurant_auth
-    username: usr_auth_service
-    # O Spring busca a variável DB_PASSWORD injetada pelo Compose
-    password: ${DB_PASSWORD:}
+    # Usamos as variáveis que o Docker Compose injeta
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_restaurant_auth}
+    username: ${SPRING_DATASOURCE_USERNAME:usr_auth_service}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
 
   jpa:
     hibernate:
-      # 'update' para criar as tabelas automaticamente no ambiente do professor
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     open-in-view: false
 
   flyway:
     enabled: false
 
+# Se você não estiver usando Eureka no momento, pode deixar assim
+# ou desabilitar se for causar erro de conexão no log
 eureka:
   client:
+    enabled: false
     service-url:
       defaultZone: http://eureka-server:8761/eureka/
 
